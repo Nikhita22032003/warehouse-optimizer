@@ -3,6 +3,39 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 GRID_SIZE = 20
+def draw_grid_streamlit(step, robots):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import ListedColormap
+
+    visual = np.zeros((GRID_SIZE, GRID_SIZE))
+
+    for y in range(GRID_SIZE):
+        for x in range(GRID_SIZE):
+
+            if grid[y][x] == 'X':
+                visual[y][x] = 1
+            elif grid[y][x] == 'P':
+                visual[y][x] = 2
+            elif grid[y][x] == 'R':
+                visual[y][x] = 3
+            elif grid[y][x] == 'C':
+                visual[y][x] = 4
+            elif grid[y][x] == 'S':
+                visual[y][x] = 5
+
+    cmap = ListedColormap(['white','black','orange','blue','green','purple','lightblue'])
+
+    for robot in robots:
+        for (tx, ty) in robot.trail:
+            if visual[ty][tx] == 0:
+                visual[ty][tx] = 6
+
+    fig, ax = plt.subplots()
+    ax.imshow(visual, cmap=cmap)
+    ax.set_title(f"Step {step}")
+
+    return fig
 
 # create empty grid
 grid = []
@@ -400,3 +433,88 @@ if __name__ == "__main__":
 
     plt.ioff()  # stop animation
     plt.show()  # keep final window open
+def simulate_multi_robot_streamlit():
+    frames = []
+
+    robots_data = load_robots()
+    parcels = load_parcels()
+
+    robots = []
+    for r in robots_data:
+        robots.append(Robot(int(r['x_position']), int(r['y_position'])))
+
+    pick_points = [(int(p['x_position']), int(p['y_position'])) for p in parcels]
+
+    charging_station = None
+    layout = load_layout()
+    for cell in layout:
+        if cell['type'] == 'charging_station':
+            charging_station = (int(cell['cell_x']), int(cell['cell_y']))
+
+    for step in range(30):
+
+        place_objects()
+
+        robots.sort(key=lambda r: (r.battery, -r.tasks_completed))
+
+        for robot in robots:
+
+            distance_to_charge = abs(robot.x - charging_station[0]) + abs(robot.y - charging_station[1])
+
+            if robot.battery <= distance_to_charge + 5:
+                robot.target = charging_station
+                robot.path = []
+
+            if robot.target is None:
+                if not robot.carrying:
+                    target = get_nearest_pick(robot, pick_points)
+                    if target:
+                        robot.target = target
+                        assigned_targets.add(target)
+                else:
+                    robot.target = charging_station
+                robot.path = []
+
+            if robot.target and robot.target in picked:
+                robot.target = None
+                robot.path = []
+
+            if robot.target:
+                if not robot.path:
+                    robot.path = astar((robot.x, robot.y), robot.target)
+
+                if robot.path:
+                    next_x, next_y = robot.path[0]
+
+                    occupied = {(r.x, r.y) for r in robots if r != robot}
+
+                    if is_free(next_x, next_y) and (next_x, next_y) not in occupied:
+                        robot.path.pop(0)
+                        robot.x, robot.y = next_x, next_y
+                        robot.trail.append((robot.x, robot.y))
+
+                        if len(robot.trail) > 20:
+                            robot.trail.pop(0)
+
+                        robot.distance += 1
+                        robot.battery -= 1
+
+            if robot.target and (robot.x, robot.y) == robot.target:
+
+                if not robot.carrying:
+                    picked.add(robot.target)
+                    robot.carrying = True
+                    if robot.target in pick_points:
+                        pick_points.remove(robot.target)
+                else:
+                    robot.carrying = False
+                    robot.battery = robot.max_battery
+
+                robot.target = None
+                robot.path = []
+                robot.tasks_completed += 1
+
+        fig = draw_grid_streamlit(step, robots)
+        frames.append(fig)
+
+    return frames
