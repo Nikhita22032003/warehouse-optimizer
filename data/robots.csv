@@ -1,0 +1,5 @@
+robot_id,x_position,y_position,battery_level,status
+R1,2,3,80,active
+R2,5,5,75,active
+R3,8,2,60,idle
+R4,1,7,90,active

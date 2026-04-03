@@ -1,0 +1,6 @@
+cell_x,cell_y,type
+2,2,obstacle
+3,2,obstacle
+4,2,obstacle
+10,10,sorting_zone
+0,0,charging_station

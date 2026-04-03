@@ -1,0 +1,5 @@
+parcel_id,x_position,y_position,priority
+P1,10,10,high
+P2,15,3,medium
+P3,6,14,low
+P4,12,8,high
