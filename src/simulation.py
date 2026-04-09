@@ -103,7 +103,7 @@ def get_nearest_pick(robot, pick_points):
 
 def load_robots():
     robots = []
-    with open('../data/robots.csv', 'r') as file:
+    with open('data/robots.csv', 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             robots.append(row)
@@ -112,7 +112,7 @@ def load_robots():
 
 def load_parcels():
     parcels = []
-    with open('../data/parcels.csv', 'r') as file:
+    with open('data/parcels.csv', 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             parcels.append(row)
@@ -121,7 +121,7 @@ def load_parcels():
 
 def load_layout():
     layout = []
-    with open('../data/warehouse_layout.csv', 'r') as file:
+    with open('data/warehouse_layout.csv', 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             layout.append(row)
