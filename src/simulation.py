@@ -35,6 +35,8 @@ def draw_grid_streamlit(step, robots):
     ax.imshow(visual, cmap=cmap)
     ax.set_title(f"Step {step}")
 
+    plt.close(fig)  # prevent display in non-streamlit environments
+
     return fig
 
 # create empty grid
@@ -434,6 +436,17 @@ if __name__ == "__main__":
     plt.ioff()  # stop animation
     plt.show()  # keep final window open
 def simulate_multi_robot_streamlit():
+    global picked, assigned_targets, grid
+
+    # 🔥 RESET GLOBAL STATE
+    picked = set()
+    assigned_targets = set()
+
+    # 🔥 RESET GRID
+    grid = []
+    for i in range(GRID_SIZE):
+        row = ['.'] * GRID_SIZE
+        grid.append(row)
     frames = []
 
     robots_data = load_robots()
